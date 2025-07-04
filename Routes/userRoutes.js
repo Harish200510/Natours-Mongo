@@ -1,20 +1,20 @@
 const express=require('express')
 
-const {getAllUsers,getUser,createUser,updateUser,deletUser}=require('./../controllers/userController')
+const userController=require('./../controllers/userController')
 
 const router=express.Router();
 
 
  router
   .route('/')
-  .get(getAllUsers)
-  .post(createUser)
+  .get(userController.getAllUsers)
+  .post(userController.createUser)
 
  router
   .route('/:id')
-  .get(getUser)
-  .patch(updateUser)
-  .delete(deletUser)
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deletUser)
 
 
 module.exports=router
