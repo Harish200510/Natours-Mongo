@@ -2,9 +2,11 @@ const express=require('express')
 const morgan=require('morgan');
 const tourRouter=require('./Routes/tourRoutes')
 const userRouter=require('./Routes/userRoutes')
+const qs=require('qs')
 
 const app=express();
 
+app.set('query parser',(str)=>qs.parse(str))
 
 //Middleware 
 if(process.env.NODE_ENV==='development'){

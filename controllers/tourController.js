@@ -1,12 +1,45 @@
+const { json } = require('express')
 const Tour=require('./../models/tourModel')
 
 exports.getAllTours=async (req,res)=>{
 
     try{
+          console.log(req.query)
+          //1A)Filtering
+           //creating  a new object with new address which will not affect the original req.query
+          const queryObj={...req.query}
 
-        const tours= await Tour.find()
-     
-         res.status(200).json({
+          //Removing the fields that we don't want to filter these are like for pagination, sorting, limiting and selecting fields which was not a fields in database
+          const excludedFields=['page','sort','limit','fields']        
+        
+          //Looping through the excludedFields and deleting them from the queryObj that are not required for filtering
+          excludedFields.forEach(el=>delete queryObj[el])
+          
+          //1B)Advanced filtering
+          let queryStr=JSON.stringify(queryObj)
+          queryStr=queryStr.replace(/\b(gte|gt|lte|lt)\b/g,match=>`$${match}`)
+                  
+         let query= Tour.find(JSON.parse(queryStr))
+
+         //2)Sorting
+
+         if(req.query.sort){
+            //if there is a sort query then we will sort the data
+            //we will split the sort query by comma and join it with space to make it a valid mongoose sort query
+            const sortBy=req.query.sort.split(',').join(' ')
+            query=query.sort(sortBy)
+         }
+         else{
+            //if new data comes in that will at first 
+            query=query.sort('-createdAt')
+         }
+
+
+         //Excecuting the query
+          const tours=await query
+
+        //Sending the response
+          res.status(200).json({
              status:'success',
              results:tours.length,
              data:{
