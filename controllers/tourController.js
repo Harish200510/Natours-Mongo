@@ -1,6 +1,13 @@
 const { json } = require('express')
 const Tour=require('./../models/tourModel')
 
+exports.aliasTopTours=(req,res,next)=>{
+    
+    req.url =
+    '?limit=5&sort=-ratingsAverage,price&fields=name,price,ratingsAverage,difficulty'
+    next()
+}
+
 exports.getAllTours=async (req,res)=>{
 
     try{
