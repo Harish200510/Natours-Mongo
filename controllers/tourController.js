@@ -209,9 +209,9 @@ exports.getTourStats=async(req,res)=>{
       {
         $sort:{avgPrice:1}
       },
-      {
-        $match:{_id:{$ne:'EASY'}}
-      }
+    //   {
+    //     $match:{_id:{$ne:'EASY'}}
+    //   }
     ])
     res.status(200).json({
         status:'success',
@@ -221,9 +221,68 @@ exports.getTourStats=async(req,res)=>{
     })
     }
     catch(err){
-         res.status(400).json({
+         res.status(404).json({
             status:'Fail',
             message:err.message
          })
+    }
+}
+
+//to get the number of tours in a given year
+//By checking startdate of that year
+exports.getMonthlyPlan=async(req,res)=>{
+    try{
+        //converting string to integer
+        const year=req.params.year*1
+
+        //if we not await it will simply return the aggregate function not the data
+        const plan=await Tour.aggregate([
+            {
+                $unwind:'$startDates'
+            },
+            {
+                $match:{
+                    startDates:{
+                        $gte:new Date(`${year}-01-01`),
+                        $lte:new Date(`${year}-12-31`)
+                    }
+                }
+            },
+            {
+                $group:{
+                    _id:{$month:'$startDates'},
+                    numTourStarts:{$sum:1},
+                    tours:{$push:'$name'}
+                }
+            },
+            //addding the fields while displaying
+            {
+                $addFields:{month:'$_id'}
+            },
+            //Here _id won't displayed on the screen
+            {
+                $project:{_id:0}
+            },
+            {
+                 $sort:{numTourStarts:-1}
+            },
+            {
+                $limit:12
+            }
+        ])
+
+        res.status(200).json({
+            status:'success',
+            data:{
+                plan
+            }
+
+        })
+    }
+    catch(err){
+        res.status(404).json({
+            status:'Fail',
+            message:err.message
+        })
     }
 }
