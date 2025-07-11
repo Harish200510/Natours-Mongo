@@ -5,7 +5,9 @@ const tourSchema=new mongoose.Schema({
     name:{
         type:String,
         required:[true,"A Tour Must have a Name"],
-        unique:true
+        unique:true,
+        maxlength:[40,'A tour name must have less or equal then 40 character'],
+        minlength:[10,'A tour name mustt have more or equal then 10 characters']
     },
     slug:String,
     duration:{
@@ -57,7 +59,10 @@ const tourSchema=new mongoose.Schema({
         select:false
     },
    startDates:[Date],
-
+   secretTour:{
+    type:Boolean,
+    default:false
+   }
 },{
     toJSON:{virtuals:true},
     toObject:{virtuals:true}
@@ -74,14 +79,40 @@ tourSchema.pre('save',function(next){
     next()
 })
 
-tourSchema.pre('save',function(next){
-   console.log('Will save documnent...')
-    next()
+// tourSchema.pre('save',function(next){
+//    console.log('Will save documnent...')
+//     next()
+// })
+
+
+// tourSchema.post('save',function(doc,next){
+//     console.log(doc)
+//     next()
+// })
+
+
+//Query MIDDLEWARE
+//whatever the query starts with find 
+tourSchema.pre(/^find/,function(next){
+   // tourSchema.pre('find',function(next){
+    this.find({secretTour:{$ne:true}})
+
+    this.start=Date.now()
+    next();
 })
 
+tourSchema.post(/^find/,function(docs,next){
 
-tourSchema.post('save',function(doc,next){
-    console.log(doc)
+    console.log(`Query took ${Date.now()-this.start} millisecond`)
+    console.log(docs)
+    next()
+      
+})
+
+//AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate',function(next){
+    this.pipeline().unshift({$match:{secretTour:{$ne:true}}})
+    console.log(this.pipeline())
     next()
 })
 
