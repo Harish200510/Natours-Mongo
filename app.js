@@ -10,7 +10,6 @@ app.set('query parser',(str)=>qs.parse(str))
 
 //Middleware 
 if(process.env.NODE_ENV==='development'){
-
   app.use(morgan('dev'))
 }
 
@@ -27,5 +26,14 @@ app.use((req, res, next) => {
 
  app.use('/api/v1/users',userRouter)
 
-module.exports=app;
 
+//any route that are not handeled that are return error 
+app.all('/{*any}',(req,res,next)=>{
+   res.status(404).json({
+    status:'fail',
+    message:`can't find ${req.originalUrl} not found`
+   })
+   next()
+})
+
+module.exports=app;
