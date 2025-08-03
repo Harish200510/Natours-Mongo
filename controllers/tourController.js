@@ -1,5 +1,7 @@
 const { json } = require('express')
 const Tour=require('./../models/tourModel')
+const AppError=require('./../utils/appError')
+const catchAsync=require('./../utils/catchAsync')
 const APIFeatures=require('./../utils/apiFeatures')
 
 exports.aliasTopTours=(req,res,next)=>{
@@ -10,10 +12,10 @@ exports.aliasTopTours=(req,res,next)=>{
 }
 
 
-exports.getAllTours=async (req,res)=>{
+exports.getAllTours=catchAsync(async(req,res,next)=>{
 
-    try{
-          console.log(req.query)
+
+         // console.log(req.query)
          
         //    //1A)Filtering
         //    //creating  a new object with new address which will not affect the original req.query
@@ -87,38 +89,26 @@ exports.getAllTours=async (req,res)=>{
                 tours
              }
          })
-    }catch(err){
-        res.status(400).json({
-            status:'fail',
-            message:err.message
-        })
-    }
-}
+         next()
+    })
 
-exports.getTour=async (req,res)=>{
-   try{
-
+exports.getTour=catchAsync(async(req,res,next)=>{
+   
       const tour=await Tour.findById(req.params.id)
-      
+       
+      if(!tour)return next(new AppError("No tour found with that ID",404))
        res.status(200).json({
            status:'success',
            data:{
                tour
            }
        })
-   }catch(err){
-       res.send(400).json({
-        status:'fail',
-        message:err
-       })
-   }
-      
-}
+       next();
+   })
 
-exports.createTour=async(req,res)=>{
 
-    try{
-
+exports.createTour=catchAsync(
+async(req,res,next)=>{
         const newTour=await  Tour.create(req.body)
       
             res.status(201).json(
@@ -128,23 +118,18 @@ exports.createTour=async(req,res)=>{
                    tour:newTour
                }
                })
-       }catch(err){
-         res.status(400).json({
-            staus:'fail',
-            message:"Invalid data sent!"
-         })
-       }
+        next()
+       } 
+)
 
-  
-}
+exports.updateTour= catchAsync(async (req,res,next)=>{
 
-exports.updateTour=async (req,res)=>{
-
-    try{
       const tour=await Tour.findByIdAndUpdate(req.params.id,req.body,{
             new:true,
             runValidators:true //this will run the validator again to check the data to update
         })
+
+      if(!tour)return next(new AppError("No tour found with that ID",404))
 
         res.status(200).json({
             status:"success",
@@ -152,45 +137,24 @@ exports.updateTour=async (req,res)=>{
                 tour
             }
         })
-    }catch(err){
+        next()
+    })
 
-        res.send(400).json({
-            status:fail,
-            message:err
-        })
-
-    }
-
-
-}
-
-exports.deletTour=async(req,res)=>{
-   try{
-
+exports.deletTour=catchAsync(async(req,res,next)=>{
+  
        const delTour=await Tour.findByIdAndDelete(req.params.id)
        
-       if(!delTour){
-        return res.status(404).json({
-            status:'fail',
-            message:'Tour not Found'
-        })
-       }
+      if(!delTour)return next(new AppError("No tour found with that ID",404))
+       
         res.status(200).json({
             status:"Success",
             data:null
         })
-   }
-   catch(err){
-    res.status(400).json({
-        status:'fail',
-        message:err
-    })
-   }
+        next()
+   })
 
-}
+exports.getTourStats=catchAsync(async(req,res,next)=>{
 
-exports.getTourStats=async(req,res)=>{
-    try{
      const stats=await Tour.aggregate([
         {
         $match:{ratingsAverage:{$gte:4.5}}
@@ -219,19 +183,13 @@ exports.getTourStats=async(req,res)=>{
             stats
         }
     })
-    }
-    catch(err){
-         res.status(404).json({
-            status:'Fail',
-            message:err.message
-         })
-    }
-}
+    next()
+    })
 
 //to get the number of tours in a given year
 //By checking startdate of that year
-exports.getMonthlyPlan=async(req,res)=>{
-    try{
+exports.getMonthlyPlan=catchAsync(async(req,res,next)=>{
+    
         //converting string to integer
         const year=req.params.year*1
 
@@ -278,11 +236,5 @@ exports.getMonthlyPlan=async(req,res)=>{
             }
 
         })
-    }
-    catch(err){
-        res.status(404).json({
-            status:'Fail',
-            message:err.message
-        })
-    }
-}
+        next()
+    })

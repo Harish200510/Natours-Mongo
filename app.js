@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 //any route that are not handeled that are return error 
 app.all('/{*any}',(req,res,next)=>{
-
+  
    next(new AppError(`can't find ${req.originalUrl} on this server!`,404))
 
 })
