@@ -61,6 +61,17 @@ userSchema.pre('save',async function(next){
 
    next()
 })
+  //-this mongoose middleware is to set passwordchangedat when we reset the password and save this middleware will run automatically
+userSchema.pre('save',function(next){
+     //if the password is not modified or the document is newly created than don'tneed to do anything (this middleware runs everytime wehn we save so create a new document)
+   if(!this.isModified('password') || this.isNew)return next()
+
+   //Sometime storing a data in database is slower than the creating a token so  we are reducing 1s from the time so there will be no issue in login
+   this.passwordChangedAt=Date.now()-1000;
+
+   next();
+})
+
 
 //instance method
 
