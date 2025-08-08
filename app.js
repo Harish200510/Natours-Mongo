@@ -1,6 +1,6 @@
 const express=require('express')
 const morgan=require('morgan');
-
+const rateLimit=require('express-rate-limit')
 const AppError=require('./utils/appError')
 const globalErrorHandler=require('./controllers/errorController')
 const tourRouter=require('./Routes/tourRoutes')
@@ -11,10 +11,22 @@ const app=express();
 
 app.set('query parser',(str)=>qs.parse(str))
 
-//Middleware 
+//1)Global Middleware 
 if(process.env.NODE_ENV==='development'){
   app.use(morgan('dev'))
 }
+
+//we basically set that 100 times only a user can access in per hour 
+const limiter=rateLimit({
+  max:100,
+  windowMs:60*60*1000,
+  message:'Too many requests from this IP, Please try again in an hour'//error message
+})
+
+
+//This middleware will be applied whose api will starts wit api
+ app.use('/api',limiter)
+
 
 app.use(express.json())
 
