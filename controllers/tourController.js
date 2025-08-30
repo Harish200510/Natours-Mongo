@@ -4,6 +4,7 @@ const AppError=require('./../utils/appError')
 const catchAsync=require('./../utils/catchAsync')
 const APIFeatures=require('./../utils/apiFeatures')
 
+
 exports.aliasTopTours=(req,res,next)=>{
     
     req.url =
@@ -76,6 +77,7 @@ exports.getAllTours=catchAsync(async(req,res,next)=>{
          .sort()
          .limitFields()
          .paginate();
+       
 
 
          //Excecuting the query
@@ -89,7 +91,7 @@ exports.getAllTours=catchAsync(async(req,res,next)=>{
                 tours
              }
          })
-         next()
+        next()
     })
 
 exports.getTour=catchAsync(async(req,res,next)=>{
@@ -103,7 +105,7 @@ exports.getTour=catchAsync(async(req,res,next)=>{
                tour
            }
        })
-       next();
+       next()
    })
 
 

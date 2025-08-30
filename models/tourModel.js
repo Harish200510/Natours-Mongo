@@ -1,3 +1,4 @@
+const User=require('./userModel')
 const mongoose=require('mongoose')
 const validator=require('validator')
 const slugify=require('slugify')
@@ -25,7 +26,7 @@ const tourSchema=new mongoose.Schema({
         required:[true,'A tour must have a difficulty'],
         enum:{
             
-            values:['easy','medium','difficlut'],
+            values:['easy','medium','difficult'],
             message:'Difficluty is either:easy,medium,diffcult'
         }
     },
@@ -84,7 +85,38 @@ const tourSchema=new mongoose.Schema({
    secretTour:{
     type:Boolean,
     default:false
-   }
+   },
+   startLocation:{
+     //GeoJSON
+     type:{
+        type:String,
+        default:'Point',
+        enum:['Point']
+     },
+     coordinates:[Number],
+     address:String,
+     description:String   
+   },
+   locations:[
+    {
+        type:{
+            type:String,
+            default:'Point',
+            enum:['Point']
+        },
+        coordinates:[Number],
+        address:String,
+        description:String,
+        day:Number
+    }
+   ],
+   guides:[
+        {
+            type:mongoose.Schema.ObjectId,
+            ref:'User'
+        }
+    ]
+
 },{
     toJSON:{virtuals:true},
     toObject:{virtuals:true}
@@ -101,6 +133,24 @@ tourSchema.pre('save',function(next){
     next()
 })
 
+//Query MIDDLEWARE
+//whatever the query starts with find 
+tourSchema.pre( /^find/, function( next ){
+     this.find({secretTour:{$ne:true}});
+
+    this.populate( { path: 'guides', select: '-__v -passwordChangedAt' } ); // populates guides with corresponding user documents
+    
+    this.start=Date.now()
+    next();
+});
+
+//get user id and storing or embedding user details in tour itself
+// tourSchema.pre('save',async function(next){
+//     const guidesPromises=this.guides.map(async id=>await User.findById(id));
+//     this.guides=await Promise.all(guidesPromises);
+//    next();
+// })
+
 // tourSchema.pre('save',function(next){
 //    console.log('Will save documnent...')
 //     next()
@@ -112,16 +162,6 @@ tourSchema.pre('save',function(next){
 //     next()
 // })
 
-
-//Query MIDDLEWARE
-//whatever the query starts with find 
-tourSchema.pre(/^find/,function(next){
-   // tourSchema.pre('find',function(next){
-    this.find({secretTour:{$ne:true}})
-
-    this.start=Date.now()
-    next();
-})
 
 tourSchema.post(/^find/,function(docs,next){
 

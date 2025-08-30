@@ -12,6 +12,7 @@ const AppError=require('./utils/appError')
 const globalErrorHandler=require('./controllers/errorController')
 const tourRouter=require('./Routes/tourRoutes')
 const userRouter=require('./Routes/userRoutes');
+const reviewRouter=require('./Routes/reviewRoutes')
 const ExpressMongoSanitize = require('express-mongo-sanitize');
 
 
@@ -74,6 +75,7 @@ app.use((req, res, next) => {
 //3)Routes
  app.use('/api/v1/tours',tourRouter)
  app.use('/api/v1/users',userRouter)
+ app.use('api/v1/reviews',reviewRouter)
 
 
 //any route that are not handeled that are return error 
