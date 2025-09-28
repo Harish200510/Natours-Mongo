@@ -1,4 +1,4 @@
-const Review=require('./reviewModel')
+const Review = require('./reviewModel');
 const User = require('./userModel');
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -117,7 +117,6 @@ const tourSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
-   
   },
   {
     toJSON: { virtuals: true },
@@ -125,15 +124,21 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+//tourSchema.index({price:1})
+//compound index
+tourSchema.index({price:1,ratingsAverage:-1})
+tourSchema.index({slug:1})
+
+
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
-tourSchema.virtual('reviews',{
-    ref:'Review',
-    localField:'_id',
-    foreignField:'tour',
-})
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'tour',
+});
 
 //Document Middleware: runs before .save() and .create()
 tourSchema.pre('save', function (next) {
